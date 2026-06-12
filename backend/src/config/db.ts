@@ -2,7 +2,14 @@ import mongoose from 'mongoose';
 
 export const connectDB = async () => {
   const rawUri = process.env.MONGODB_URI;
-  const uri = typeof rawUri === 'string' ? rawUri.trim() : '';
+  let uri = typeof rawUri === 'string' ? rawUri.trim() : '';
+
+  // Defensive: if someone accidentally pasted the full `MONGODB_URI=...` into the
+  // environment value field (common UI mistake), strip the leading `KEY=` part.
+  const keyPrefixMatch = uri.match(/^[A-Za-z_][A-Za-z0-9_]*=(.*)$/s);
+  if (keyPrefixMatch) {
+    uri = keyPrefixMatch[1].trim();
+  }
 
   if (!uri) {
     console.error('Error: MONGODB_URI is not set. Set it in your environment variables.');
